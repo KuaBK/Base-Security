@@ -1,0 +1,79 @@
+package com.cua.iam_service.service;
+
+import com.cua.iam_service.dto.response.RoleResponse;
+import com.cua.iam_service.entity.Role;
+import com.cua.iam_service.exception.BadRequestException;
+import com.cua.iam_service.exception.ResourceNotFoundException;
+import com.cua.iam_service.repository.RoleRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class RoleService {
+
+    private final RoleRepository roleRepository;
+
+    @Transactional
+    public RoleResponse createRole(String name, String description) {
+        if (roleRepository.existsByName(name)) {
+            throw new BadRequestException("Role đã tồn tại với tên: " + name);
+        }
+
+        Role role = Role.builder()
+                .name(name)
+                .description(description)
+                .build();
+
+        Role savedRole = roleRepository.save(role);
+        return mapToRoleResponse(savedRole);
+    }
+
+    public RoleResponse getRoleById(Long id) {
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy role với ID: " + id));
+        return mapToRoleResponse(role);
+    }
+
+    public Page<RoleResponse> getAllRoles(Pageable pageable) {
+        return roleRepository.findAll(pageable)
+                .map(this::mapToRoleResponse);
+    }
+
+    @Transactional
+    public RoleResponse updateRole(Long id, String name, String description) {
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy role với ID: " + id));
+
+        if (!role.getName().equals(name) && roleRepository.existsByName(name)) {
+            throw new BadRequestException("Role đã tồn tại với tên: " + name);
+        }
+
+        role.setName(name);
+        role.setDescription(description);
+
+        Role savedRole = roleRepository.save(role);
+        return mapToRoleResponse(savedRole);
+    }
+
+    @Transactional
+    public void deleteRole(Long id) {
+        if (!roleRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Không tìm thấy role với ID: " + id);
+        }
+        roleRepository.deleteById(id);
+    }
+
+    private RoleResponse mapToRoleResponse(Role role) {
+        return RoleResponse.builder()
+                .id(role.getId())
+                .name(role.getName())
+                .description(role.getDescription())
+                .createdAt(role.getCreatedAt())
+                .updatedAt(role.getUpdatedAt())
+                .build();
+    }
+}
