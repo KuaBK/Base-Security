@@ -2,9 +2,10 @@ package com.cua.iam_service.service;
 
 import com.cua.iam_service.dto.response.RoleResponse;
 import com.cua.iam_service.entity.Role;
-import com.cua.iam_service.exception.BadRequestException;
-import com.cua.iam_service.exception.ResourceNotFoundException;
+import com.cua.iam_service.exception.AppException;
+import com.cua.iam_service.exception.ErrorCode;
 import com.cua.iam_service.repository.RoleRepository;
+import com.cua.iam_service.util.RoleUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,13 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class RoleService {
-
     private final RoleRepository roleRepository;
+    private final RoleUtil roleUtil;
 
     @Transactional
     public RoleResponse createRole(String name, String description) {
         if (roleRepository.existsByName(name)) {
-            throw new BadRequestException("Role đã tồn tại với tên: " + name);
+            throw new AppException(ErrorCode.CONFLICT, "Role đã tồn tại với tên: " + name);
         }
 
         Role role = Role.builder()
@@ -33,8 +34,7 @@ public class RoleService {
     }
 
     public RoleResponse getRoleById(Long id) {
-        Role role = roleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy role với ID: " + id));
+        Role role = roleUtil.getRoleOrThrow(id);
         return mapToRoleResponse(role);
     }
 
@@ -45,11 +45,10 @@ public class RoleService {
 
     @Transactional
     public RoleResponse updateRole(Long id, String name, String description) {
-        Role role = roleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy role với ID: " + id));
+        Role role = roleUtil.getRoleOrThrow(id);
 
         if (!role.getName().equals(name) && roleRepository.existsByName(name)) {
-            throw new BadRequestException("Role đã tồn tại với tên: " + name);
+            throw new AppException(ErrorCode.CONFLICT, "Role đã tồn tại với tên: " + name);
         }
 
         role.setName(name);
@@ -62,7 +61,7 @@ public class RoleService {
     @Transactional
     public void deleteRole(Long id) {
         if (!roleRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Không tìm thấy role với ID: " + id);
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy role với ID: " + id);
         }
         roleRepository.deleteById(id);
     }

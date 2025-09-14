@@ -1,5 +1,6 @@
 package com.cua.iam_service.controller;
 
+import com.cua.iam_service.dto.BaseResponse;
 import com.cua.iam_service.dto.request.CreateRoleRequest;
 import com.cua.iam_service.dto.response.RoleResponse;
 import com.cua.iam_service.service.RoleService;
@@ -26,44 +27,54 @@ public class RoleController {
     @PostMapping
     @Operation(summary = "Tạo role mới")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RoleResponse> createRole(@Valid @RequestBody CreateRoleRequest request) {
+    public ResponseEntity<BaseResponse<RoleResponse>> createRole(@Valid @RequestBody CreateRoleRequest request) {
         RoleResponse role = roleService.createRole(request.getName(), request.getDescription());
-        return ResponseEntity.status(HttpStatus.CREATED).body(role);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(BaseResponse.created("Tạo role mới thành công", role));
     }
 
     @GetMapping
     @Operation(summary = "Lấy danh sách roles")
-    public ResponseEntity<Page<RoleResponse>> getAllRoles(
+    public ResponseEntity<BaseResponse<Page<RoleResponse>>> getAllRoles(
             @PageableDefault(size = 20) Pageable pageable) {
 
         Page<RoleResponse> roles = roleService.getAllRoles(pageable);
-        return ResponseEntity.ok(roles);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(BaseResponse.ok("Lấy danh sách role thành công", roles));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Lấy thông tin role theo ID")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RoleResponse> getRoleById(@PathVariable Long id) {
+    public ResponseEntity<BaseResponse<RoleResponse>> getRoleById(@PathVariable Long id) {
         RoleResponse role = roleService.getRoleById(id);
-        return ResponseEntity.ok(role);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(BaseResponse.ok("Lấy thông tin role thành công", role));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Cập nhật role")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RoleResponse> updateRole(
+    public ResponseEntity<BaseResponse<RoleResponse>> updateRole(
             @PathVariable Long id,
             @Valid @RequestBody CreateRoleRequest request) {
 
         RoleResponse role = roleService.updateRole(id, request.getName(), request.getDescription());
-        return ResponseEntity.ok(role);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(BaseResponse.ok("Cập nhật role thành công", role));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Xóa role")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteRole(@PathVariable Long id) {
+    public ResponseEntity<BaseResponse<Void>> deleteRole(@PathVariable Long id) {
         roleService.deleteRole(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .body(BaseResponse.noContent("Xóa role thành công"));
     }
 }

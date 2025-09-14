@@ -1,17 +1,16 @@
 package com.cua.iam_service.service;
 
-import com.cua.iam_service.dto.request.RegisterRequest;
 import com.cua.iam_service.dto.response.UserResponse;
 import com.cua.iam_service.entity.Role;
 import com.cua.iam_service.entity.User;
-import com.cua.iam_service.exception.BadRequestException;
-import com.cua.iam_service.exception.ResourceNotFoundException;
+import com.cua.iam_service.exception.AppException;
+import com.cua.iam_service.exception.ErrorCode;
 import com.cua.iam_service.repository.RoleRepository;
 import com.cua.iam_service.repository.UserRepository;
+import com.cua.iam_service.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,38 +23,11 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
-
-    @Transactional
-    public UserResponse createUser(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BadRequestException("Email đã tồn tại");
-        }
-
-        Role userRole = roleRepository.findByName("USER")
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy role USER"));
-
-        User user = User.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .roles(Set.of(userRole))
-                .build();
-
-        User savedUser = userRepository.save(user);
-        return mapToUserResponse(savedUser);
-    }
-
-    public UserResponse getUserById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user với ID: " + id));
-        return mapToUserResponse(user);
-    }
+    private final UserUtil userUtil;
 
     public UserResponse getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user với email: " + email));
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "không tìm thấy người dúng với email: " + email ));
         return mapToUserResponse(user);
     }
 
@@ -66,11 +38,10 @@ public class UserService {
 
     @Transactional
     public UserResponse addRoleToUser(Long userId, Long roleId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user với ID: " + userId));
+        User user = userUtil.getUserOrThrow(userId);
 
         Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy role với ID: " + roleId));
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy role với ID: " + roleId));
 
         user.getRoles().add(role);
         User savedUser = userRepository.save(user);
@@ -79,11 +50,10 @@ public class UserService {
 
     @Transactional
     public UserResponse removeRoleFromUser(Long userId, Long roleId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user với ID: " + userId));
+        User user = userUtil.getUserOrThrow(userId);
 
         Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy role với ID: " + roleId));
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy role với ID: " + roleId));
 
         user.getRoles().remove(role);
         User savedUser = userRepository.save(user);
@@ -93,7 +63,7 @@ public class UserService {
     @Transactional
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Không tìm thấy user với ID: " + id);
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy user với ID: " + id);
         }
         userRepository.deleteById(id);
     }

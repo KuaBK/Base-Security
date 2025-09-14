@@ -1,5 +1,6 @@
 package com.cua.iam_service.controller;
 
+import com.cua.iam_service.dto.BaseResponse;
 import com.cua.iam_service.dto.request.AuthenticationRequest;
 import com.cua.iam_service.dto.response.AuthenticationResponse;
 import com.cua.iam_service.dto.request.RegisterRequest;
@@ -31,11 +32,13 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "201", description = "Đăng ký thành công"),
             @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ")
     })
-    public ResponseEntity<AuthenticationResponse> register(
+    public ResponseEntity<BaseResponse<AuthenticationResponse>> register(
             @Valid @RequestBody RegisterRequest request) {
 
         AuthenticationResponse response = authenticationService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(BaseResponse.created("Đăng ký thành công", response));
     }
 
     @PostMapping("/login")
@@ -44,10 +47,12 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "200", description = "Đăng nhập thành công"),
             @ApiResponse(responseCode = "401", description = "Thông tin đăng nhập không chính xác")
     })
-    public ResponseEntity<AuthenticationResponse> login(
+    public ResponseEntity<BaseResponse<AuthenticationResponse>> login(
             @Valid @RequestBody AuthenticationRequest request) {
 
         AuthenticationResponse response = authenticationService.authenticate(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(BaseResponse.ok("Đăng nhập thành công", response));
     }
 }

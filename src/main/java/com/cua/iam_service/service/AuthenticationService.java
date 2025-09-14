@@ -5,8 +5,8 @@ import com.cua.iam_service.dto.response.AuthenticationResponse;
 import com.cua.iam_service.dto.request.RegisterRequest;
 import com.cua.iam_service.entity.Role;
 import com.cua.iam_service.entity.User;
-import com.cua.iam_service.exception.BadRequestException;
-import com.cua.iam_service.exception.ResourceNotFoundException;
+import com.cua.iam_service.exception.AppException;
+import com.cua.iam_service.exception.ErrorCode;
 import com.cua.iam_service.jwt.JwtService;
 import com.cua.iam_service.repository.RoleRepository;
 import com.cua.iam_service.repository.UserRepository;
@@ -33,11 +33,11 @@ public class AuthenticationService {
     @Transactional
     public AuthenticationResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BadRequestException("Email đã tồn tại");
+            throw new AppException(ErrorCode.CONFLICT, "Email đã tồn tại");
         }
 
         Role userRole = roleRepository.findByName("USER")
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy role USER"));
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy role USER"));
 
         User user = User.builder()
                 .email(request.getEmail())
@@ -70,7 +70,7 @@ public class AuthenticationService {
         );
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user"));
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy user"));
 
         String jwtToken = jwtService.generateToken(user);
 

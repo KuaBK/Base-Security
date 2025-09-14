@@ -4,10 +4,11 @@ spring:
 
   security:
     jwt:
-      secret-key: mySecretKey12345678901234567890123456789012345678901234567890
+      secret-key: 1Zc9csmGVH+oWdEIqmFgAAlq4ssArFnilYPbUApNr7TxlIXz4nkHUSJjL8+sIYYB
       expiration-time: 86400000 # 24 hours
 
   datasource:
+
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -20,3 +21,7 @@ spring:
 
 swagger:
   host-url: http://localhost:8080
+
+app:
+  default-admin:
+    password: admin123

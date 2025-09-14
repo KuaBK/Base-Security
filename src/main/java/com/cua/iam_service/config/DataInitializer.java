@@ -7,6 +7,7 @@ import com.cua.iam_service.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -22,9 +23,12 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${app.default-admin.password}")
+    private static String adminPassword;
+
     @Override
     @Transactional
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         initRoles();
         initAdminUser();
     }
@@ -56,7 +60,7 @@ public class DataInitializer implements CommandLineRunner {
 
             User adminUser = User.builder()
                     .email("admin@example.com")
-                    .password(passwordEncoder.encode("admin123"))
+                    .password(passwordEncoder.encode(adminPassword))
                     .firstName("Admin")
                     .lastName("User")
                     .enabled(true)
