@@ -27,4 +27,8 @@ public class BaseResponse<T> {
     public static <T> BaseResponse<T> noContent(String message) {
         return new BaseResponse<>(204, message, null);
     }
+
+    public static <T> BaseResponse<T> badRequest(String message) {
+        return new BaseResponse<>(400, message, null);
+    }
 }

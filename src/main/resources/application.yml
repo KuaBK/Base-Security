@@ -1,7 +1,17 @@
 spring:
   application:
     name: iam-service
-
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: tuanphonglqd@gmail.com
+    password: frtf trrl tzkl cqbj
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   security:
     jwt:
       secret-key: 1Zc9csmGVH+oWdEIqmFgAAlq4ssArFnilYPbUApNr7TxlIXz4nkHUSJjL8+sIYYB
@@ -25,3 +35,7 @@ swagger:
 app:
   default-admin:
     password: admin123
+  otp:
+    expiration-minutes: 5
+    length: 6
+    cooldown-minutes: 1

@@ -12,6 +12,7 @@ public enum ErrorCode {
     RESOURCE_NOT_FOUND("RESOURCE_NOT_FOUND", "Resource not found", HttpStatus.NOT_FOUND),
     CONFLICT("CONFLICT", "Xung đột dữ liệu, đã có dữ liệu trùng", HttpStatus.CONFLICT),
     VALIDATION_FAILED("VALIDATION_FAILED", "Dữ liệu đầu vào không hợp lệ", HttpStatus.BAD_REQUEST),
+    WAITING_FOR_OTP("WAITING_FOR_OTP", "Bạn cần chờ trước khi gửi lại OTP", HttpStatus.BAD_REQUEST),
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
